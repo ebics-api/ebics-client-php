@@ -120,8 +120,8 @@ abstract class OrderDataHandlerV2 extends OrderDataHandler
             $publicKey = $x509->getPublicKey();
 
             $signature = $this->signatureFactory->createSignatureXFromDetails(
-                $publicKey->getModulus(),
-                $publicKey->getExponent()
+                $publicKey->getExponent(),
+                $publicKey->getModulus()
             );
 
             $signature->setCertificateContent($certificateContent);
@@ -134,8 +134,8 @@ abstract class OrderDataHandlerV2 extends OrderDataHandler
             $exponentValueDe = base64_decode($exponentValue);
 
             $signature = $this->signatureFactory->createSignatureXFromDetails(
-                $this->bigIntegerFactory->create($modulusValueDe, 256),
-                $this->bigIntegerFactory->create($exponentValueDe, 256)
+                $this->bigIntegerFactory->create($exponentValueDe, 256),
+                $this->bigIntegerFactory->create($modulusValueDe, 256)
             );
         }
 
@@ -163,8 +163,8 @@ abstract class OrderDataHandlerV2 extends OrderDataHandler
             $publicKey = $x509->getPublicKey();
 
             $signature = $this->signatureFactory->createSignatureEFromDetails(
-                $publicKey->getModulus(),
-                $publicKey->getExponent()
+                $publicKey->getExponent(),
+                $publicKey->getModulus()
             );
 
             $signature->setCertificateContent($certificateContent);
@@ -177,8 +177,8 @@ abstract class OrderDataHandlerV2 extends OrderDataHandler
             $exponentValueDe = base64_decode($exponentValue);
 
             $signature = $this->signatureFactory->createSignatureEFromDetails(
-                $this->bigIntegerFactory->create($modulusValueDe, 256),
-                $this->bigIntegerFactory->create($exponentValueDe, 256)
+                $this->bigIntegerFactory->create($exponentValueDe, 256),
+                $this->bigIntegerFactory->create($modulusValueDe, 256)
             );
         }
 

@@ -84,8 +84,8 @@ final class OrderDataHandlerV30 extends OrderDataHandler
         $publicKey = $x509->getPublicKey();
 
         $signature = $this->signatureFactory->createSignatureXFromDetails(
-            $publicKey->getModulus(),
-            $publicKey->getExponent()
+            $publicKey->getExponent(),
+            $publicKey->getModulus()
         );
 
         $signature->setCertificateContent($certificateContent);
@@ -117,8 +117,8 @@ final class OrderDataHandlerV30 extends OrderDataHandler
         $publicKey = $x509->getPublicKey();
 
         $signature = $this->signatureFactory->createSignatureEFromDetails(
-            $publicKey->getModulus(),
-            $publicKey->getExponent()
+            $publicKey->getExponent(),
+            $publicKey->getModulus()
         );
 
         $signature->setCertificateContent($certificateContent);
