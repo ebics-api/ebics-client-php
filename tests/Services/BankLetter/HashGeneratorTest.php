@@ -130,6 +130,78 @@ class HashGeneratorTest extends AbstractEbicsTestCase
     }
 
     /**
+     * Confirmation digest must fall back to the public-key digest when no X.509
+     * certificate is attached to the signature. Some H004 / EBICS 3.0 gateways
+     * (e.g. TEN31 / MULTIVIA in Germany) ship plain RSA keys without a
+     * certificate wrapper; the previous V3 behaviour produced a fingerprint
+     * over an empty string in that case, which is semantically meaningless.
+     *
+     * Expected hash is identical to the V2 public-key-digest result for the
+     * same keypair (see {@see testGeneratePublicKeyHash}).
+     *
+     * @group hash-generator-public-key-v3
+     * @covers
+     */
+    public function testGeneratePublicKeyHashV3WithoutCertificate()
+    {
+        $digestResolver = new DigestResolverV3(
+            new CryptService(new RSAFactory(), new AESFactory(), new RandomService())
+        );
+
+        $privateKey = new Key($this->getPrivateKey(), RSA::PRIVATE_FORMAT_PKCS1);
+        $publicKey = new Key($this->getPublicKey(), RSA::PUBLIC_FORMAT_PKCS1);
+
+        $rsaFactory = new RSAFactory();
+
+        $certificateFactory = new SignatureFactory($rsaFactory);
+
+        $signature = $certificateFactory->createSignatureAFromKeys(
+            new KeyPair($publicKey, $privateKey, 'test123')
+        );
+
+        $hash = $digestResolver->confirmDigest($signature);
+
+        self::assertEquals('e1955c3873327e1791aca42e350cea48196f7934648d48b60228eaf5d10ee0c4', $hash);
+    }
+
+    /**
+     * signDigest must also fall back to the public-key digest when no
+     * certificate is attached. The raw (non-hex) digest length is checked
+     * against the SHA-256 binary output size so the test remains insensitive
+     * to keypair-specific bytes while still failing on a wrong code path
+     * (e.g. an empty-string fingerprint, which would also be 32 bytes but
+     * deterministically different from the public-key digest).
+     *
+     * @group hash-generator-public-key-v3
+     * @covers
+     */
+    public function testSignDigestV3WithoutCertificateFallsBackToPublicKey()
+    {
+        $cryptService = new CryptService(new RSAFactory(), new AESFactory(), new RandomService());
+        $digestResolver = new DigestResolverV3($cryptService);
+
+        $privateKey = new Key($this->getPrivateKey(), RSA::PRIVATE_FORMAT_PKCS1);
+        $publicKey = new Key($this->getPublicKey(), RSA::PUBLIC_FORMAT_PKCS1);
+
+        $rsaFactory = new RSAFactory();
+        $certificateFactory = new SignatureFactory($rsaFactory);
+
+        $signature = $certificateFactory->createSignatureAFromKeys(
+            new KeyPair($publicKey, $privateKey, 'test123')
+        );
+
+        $expected = $cryptService->calculatePublicKeyDigest($signature);
+        $actual = $digestResolver->signDigest($signature);
+
+        self::assertSame(
+            $expected,
+            $actual,
+            'signDigest must hash the public key when no certificate is attached.'
+        );
+        self::assertSame(32, strlen($actual), 'SHA-256 binary digest must be 32 bytes.');
+    }
+
+    /**
      * @return string
      */
     private function getPrivateKey()

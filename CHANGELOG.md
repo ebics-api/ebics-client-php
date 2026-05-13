@@ -1,3 +1,11 @@
+## Unreleased
+
+* `DigestResolverV3` now falls back to the public-key digest when the signature
+  carries no X.509 certificate, matching `DigestResolverV2` behaviour. Fixes a
+  semantically empty fingerprint (hash of `''`) on H004 / EBICS 3.0 connections
+  that receive plain RSA keys without an X.509 wrapper (observed on the German
+  TEN31 / MULTIVIA banking gateway).
+
 ## 3.1
 
 * Added Logger.
