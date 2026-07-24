@@ -47,7 +47,33 @@ abstract class HttpClient implements HttpClientInterface
         }
 
         $response = new Response();
-        $response->loadXML($contents);
+
+        $previous = libxml_use_internal_errors(true);
+        libxml_clear_errors();
+
+        $loaded = $response->loadXML($contents, LIBXML_NONET | LIBXML_NOENT);
+
+        if (false === $loaded) {
+            $errors = libxml_get_errors();
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+
+            $message = 'Failed to load XML response.';
+            if ([] !== $errors) {
+                $details = implode(
+                    '; ',
+                    array_map(
+                        static fn($error) => trim($error->message),
+                        $errors
+                    )
+                );
+                $message .= ' ' . $details;
+            }
+
+            throw new RuntimeException($message);
+        }
+
+        libxml_use_internal_errors($previous);
 
         return $response;
     }
