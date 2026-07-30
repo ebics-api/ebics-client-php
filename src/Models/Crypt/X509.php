@@ -1117,17 +1117,17 @@ class X509 implements X509Interface
         $asn1->loadOIDs($this->oids);
 
         $filters = [];
-        $type_utf8_string = ['type' => ASN1::TYPE_UTF8_STRING];
-        $filters['tbsCertificate']['signature']['parameters'] = $type_utf8_string;
-        $filters['tbsCertificate']['signature']['issuer']['rdnSequence']['value'] = $type_utf8_string;
-        $filters['tbsCertificate']['issuer']['rdnSequence']['value'] = $type_utf8_string;
-        $filters['tbsCertificate']['subject']['rdnSequence']['value'] = $type_utf8_string;
-        $filters['tbsCertificate']['subjectPublicKeyInfo']['algorithm']['parameters'] = $type_utf8_string;
-        $filters['signatureAlgorithm']['parameters'] = $type_utf8_string;
-        $filters['authorityCertIssuer']['directoryName']['rdnSequence']['value'] = $type_utf8_string;
-        //$filters['policyQualifiers']['qualifier'] = $type_utf8_string;
-        $filters['distributionPoint']['fullName']['directoryName']['rdnSequence']['value'] = $type_utf8_string;
-        $filters['directoryName']['rdnSequence']['value'] = $type_utf8_string;
+        $typeUtf8String = ['type' => ASN1::TYPE_UTF8_STRING];
+        $filters['tbsCertificate']['signature']['parameters'] = $typeUtf8String;
+        $filters['tbsCertificate']['signature']['issuer']['rdnSequence']['value'] = $typeUtf8String;
+        $filters['tbsCertificate']['issuer']['rdnSequence']['value'] = $typeUtf8String;
+        $filters['tbsCertificate']['subject']['rdnSequence']['value'] = $typeUtf8String;
+        $filters['tbsCertificate']['subjectPublicKeyInfo']['algorithm']['parameters'] = $typeUtf8String;
+        $filters['signatureAlgorithm']['parameters'] = $typeUtf8String;
+        $filters['authorityCertIssuer']['directoryName']['rdnSequence']['value'] = $typeUtf8String;
+        //$filters['policyQualifiers']['qualifier'] = $typeUtf8String;
+        $filters['distributionPoint']['fullName']['directoryName']['rdnSequence']['value'] = $typeUtf8String;
+        $filters['directoryName']['rdnSequence']['value'] = $typeUtf8String;
 
         /* in the case of policyQualifiers/qualifier, the type has to be ASN1::TYPE_IA5_STRING.
            ASN1::TYPE_PRINTABLE_STRING will cause OpenSSL's X.509 parser to spit out random

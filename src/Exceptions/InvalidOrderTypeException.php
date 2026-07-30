@@ -15,7 +15,7 @@ final class InvalidOrderTypeException extends EbicsResponseException
         parent::__construct(
             '091005',
             $responseMessage,
-            'Upon verification, the bank finds that the order type specified in invalid.'
+            'Upon verification, the bank finds that the order type specified is not valid.'
         );
     }
 }

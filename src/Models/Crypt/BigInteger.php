@@ -22,7 +22,7 @@ final class BigInteger implements BigIntegerInterface
     /**
      * Holds the BigInteger's magnitude.
      */
-    protected bool $is_negative = false;
+    protected bool $isNegative = false;
 
     /**
      * Precision
@@ -63,7 +63,7 @@ final class BigInteger implements BigIntegerInterface
             case -256:
                 if (ord(((string)$x)[0]) & 0x80) {
                     $x = ~$x;
-                    $this->is_negative = true;
+                    $this->isNegative = true;
                 }
             // no break
             case 256:
@@ -82,13 +82,13 @@ final class BigInteger implements BigIntegerInterface
                     );
                 }
 
-                if ($this->is_negative) {
+                if ($this->isNegative) {
                     $this->value = '-' . $this->value;
                 }
 
 
-                if ($this->is_negative) {
-                    $this->is_negative = false;
+                if ($this->isNegative) {
+                    $this->isNegative = false;
 
                     $temp = $this->add(new self('-1'));
                     $this->value = $temp->getValue();
@@ -182,14 +182,14 @@ final class BigInteger implements BigIntegerInterface
 
     public function equals($x): bool
     {
-        return $this->value === $x->getValue() && $this->is_negative == $x->isNegative();
+        return $this->value === $x->getValue() && $this->isNegative == $x->isNegative();
     }
 
     public function copy(): BigInteger
     {
         $temp = new self();
         $temp->value = $this->value;
-        $temp->is_negative = $this->is_negative;
+        $temp->isNegative = $this->isNegative;
         $temp->precision = $this->precision;
         $temp->bitmask = $this->bitmask;
         return $temp;
@@ -389,20 +389,20 @@ final class BigInteger implements BigIntegerInterface
             would be pretty small. eg. with $random's max being 255 and if your $max being 1 the probability
             would be pretty high that $random would be greater than $max.
         */
-        $random_max = new self(chr(1) . str_repeat("\0", $size), 256);
+        $randomMax = new self(chr(1) . str_repeat("\0", $size), 256);
         $random = $this->randomNumberHelper($size);
 
-        [$max_multiple] = $random_max->divide($max);
-        $max_multiple = $max_multiple->multiply($max);
+        [$maxMultiple] = $randomMax->divide($max);
+        $maxMultiple = $maxMultiple->multiply($max);
 
-        while ($random->compare($max_multiple) >= 0) {
-            $random = $random->subtract($max_multiple);
-            $random_max = $random_max->subtract($max_multiple);
+        while ($random->compare($maxMultiple) >= 0) {
+            $random = $random->subtract($maxMultiple);
+            $randomMax = $randomMax->subtract($maxMultiple);
             $random = $random->bitwiseLeftShift(8);
             $random = $random->add($this->randomNumberHelper(1));
-            $random_max = $random_max->bitwiseLeftShift(8);
-            [$max_multiple] = $random_max->divide($max);
-            $max_multiple = $max_multiple->multiply($max);
+            $randomMax = $randomMax->bitwiseLeftShift(8);
+            [$maxMultiple] = $randomMax->divide($max);
+            $maxMultiple = $maxMultiple->multiply($max);
         }
         [, $random] = $random->divide($max);
 
@@ -620,6 +620,6 @@ final class BigInteger implements BigIntegerInterface
 
     public function isNegative(): bool
     {
-        return $this->is_negative;
+        return $this->isNegative;
     }
 }

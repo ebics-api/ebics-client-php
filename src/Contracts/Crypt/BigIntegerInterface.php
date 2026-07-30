@@ -24,7 +24,7 @@ interface BigIntegerInterface
     /**
      * Converts a BigInteger to a hex string (eg. base-16)).
      *
-     * Negative numbers are saved as positive numbers, unless $twos_compliment is set to true, at which point, they're
+     * Negative numbers are saved as positive numbers, unless $twosCompliment is set to true, at which point, they're
      * saved as two's compliment.
      *
      * @param bool $twosCompliment

@@ -90,7 +90,7 @@ final class HCS extends UploadOrder
                                     ->addOrderType(
                                         $orderDetailsBuilder,
                                         $this->context->getOrderType(),
-                                        $this->context->getWithES() ?
+                                        $this->context->isWithES() ?
                                             OrderDetailsBuilder::ORDER_ATTRIBUTE_OZHNN :
                                             OrderDetailsBuilder::ORDER_ATTRIBUTE_DZHNN
                                     )

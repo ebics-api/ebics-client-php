@@ -2,7 +2,7 @@
 
 namespace EbicsApi\Ebics\Exceptions;
 
-use Exception;
+use RuntimeException;
 
 /**
  * EbicsException abstract class representation.
@@ -10,6 +10,6 @@ use Exception;
  * @license http://www.opensource.org/licenses/mit-license.html  MIT License
  * @author Andrew Svirin
  */
-abstract class EbicsException extends Exception
+abstract class EbicsException extends RuntimeException
 {
 }

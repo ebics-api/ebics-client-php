@@ -56,12 +56,12 @@ final class TransferSegment extends Segment
         $this->orderData = $orderData;
     }
 
-    public function setIsLastSegment(bool $isLastSegment): void
+    public function setLastSegment(bool $lastSegment): void
     {
-        $this->isLastSegment = $isLastSegment;
+        $this->isLastSegment = $lastSegment;
     }
 
-    public function getIsLastSegment(): bool
+    public function isLastSegment(): bool
     {
         return $this->isLastSegment;
     }

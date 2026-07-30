@@ -101,7 +101,7 @@ final class HPB extends InitializationOrder
                                 $this->requestFactory->addOrderType(
                                     $orderDetailsBuilder,
                                     $this->context->getOrderType(),
-                                    $this->context->getWithES() ?
+                                    $this->context->isWithES() ?
                                         OrderDetailsBuilder::ORDER_ATTRIBUTE_OZHNN :
                                         OrderDetailsBuilder::ORDER_ATTRIBUTE_DZHNN
                                 );

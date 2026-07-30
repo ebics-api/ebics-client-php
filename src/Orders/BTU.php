@@ -86,7 +86,7 @@ final class BTU extends UploadOrder
                                     ->addOrderType(
                                         $orderDetailsBuilder,
                                         $this->context->getOrderType(),
-                                        $this->context->getWithES() ?
+                                        $this->context->isWithES() ?
                                             OrderDetailsBuilder::ORDER_ATTRIBUTE_OZHNN :
                                             OrderDetailsBuilder::ORDER_ATTRIBUTE_DZHNN
                                     );
@@ -158,7 +158,7 @@ final class BTU extends UploadOrder
             $xmlMsgName->setAttribute('format', $this->btuContext->getMsgNameFormat());
         }
 
-        if ($this->context->getWithES()) {
+        if ($this->context->isWithES()) {
             $xmlSignatureFlag = $orderDetailsBuilder->appendEmptyElementTo('SignatureFlag', $xmlBTUOrderParams);
 
             $xmlSignatureFlag->setAttribute('requestEDS', 'true');

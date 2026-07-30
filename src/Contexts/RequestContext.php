@@ -172,7 +172,7 @@ final class RequestContext
         return $this;
     }
 
-    public function getWithES(): bool
+    public function isWithES(): bool
     {
         return $this->withES;
     }
@@ -201,14 +201,14 @@ final class RequestContext
         return $this->segmentNumber;
     }
 
-    public function setIsLastSegment(?bool $isLastSegment): RequestContext
+    public function setLastSegment(?bool $lastSegment): RequestContext
     {
-        $this->isLastSegment = $isLastSegment;
+        $this->isLastSegment = $lastSegment;
 
         return $this;
     }
 
-    public function getIsLastSegment(): ?bool
+    public function isLastSegment(): ?bool
     {
         return $this->isLastSegment;
     }

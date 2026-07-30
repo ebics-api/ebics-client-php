@@ -79,7 +79,7 @@ final class H3K extends StandardOrder
                                 $this->requestFactory->addOrderType(
                                     $orderDetailsBuilder,
                                     $this->context->getOrderType(),
-                                    $this->context->getWithES() ?
+                                    $this->context->isWithES() ?
                                         OrderDetailsBuilder::ORDER_ATTRIBUTE_OZHNN :
                                         OrderDetailsBuilder::ORDER_ATTRIBUTE_DZHNN
                                 );

@@ -623,9 +623,9 @@ final class RSA implements RSAInterface
         array $coefficients
     ): string {
         $signed = true;
-        $num_primes = count($primes);
+        $numPrimes = count($primes);
         $raw = [
-            'version' => $num_primes == 2 ? chr(0) : chr(1), // two-prime vs. multi
+            'version' => $numPrimes == 2 ? chr(0) : chr(1), // two-prime vs. multi
             'modulus' => $n->toBytes($signed),
             'publicExponent' => $e->toBytes($signed),
             'privateExponent' => $d->toBytes($signed),
@@ -652,7 +652,7 @@ final class RSA implements RSAInterface
 
                 $RSAPrivateKey = implode('', $components);
 
-                if ($num_primes > 2) {
+                if ($numPrimes > 2) {
                     throw new LogicException('Should not be more than 2 primes.');
                 }
 
@@ -1162,10 +1162,10 @@ final class RSA implements RSAInterface
                 return $x->modPow($this->exponent, $this->modulus);
         }
 
-        $num_primes = count($this->primes);
+        $numPrimes = count($this->primes);
 
         $smallest = $this->primes[1];
-        for ($i = 2; $i <= $num_primes; $i++) {
+        for ($i = 2; $i <= $numPrimes; $i++) {
             if ($smallest->compare($this->primes[$i]) > 0) {
                 $smallest = $this->primes[$i];
             }
@@ -1175,22 +1175,22 @@ final class RSA implements RSAInterface
 
         $r = $one->random($one, $smallest->subtract($one));
 
-        $m_i = [
+        $mI = [
             1 => $this->blind($x, $r, 1),
             2 => $this->blind($x, $r, 2),
         ];
-        $h = $m_i[1]->subtract($m_i[2]);
+        $h = $mI[1]->subtract($mI[2]);
         $h = $h->multiply($this->coefficients[2]);
         [, $h] = $h->divide($this->primes[1]);
-        $m = $m_i[2]->add($h->multiply($this->primes[2]));
+        $m = $mI[2]->add($h->multiply($this->primes[2]));
 
         $r = $this->primes[1];
-        for ($i = 3; $i <= $num_primes; $i++) {
-            $m_i = $this->blind($x, $r, $i);
+        for ($i = 3; $i <= $numPrimes; $i++) {
+            $mI = $this->blind($x, $r, $i);
 
             $r = $r->multiply($this->primes[$i - 1]);
 
-            $h = $m_i->subtract($m);
+            $h = $mI->subtract($m);
             $h = $h->multiply($this->coefficients[$i]);
             [, $h] = $h->divide($this->primes[$i]);
 

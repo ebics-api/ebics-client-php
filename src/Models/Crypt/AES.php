@@ -18,14 +18,14 @@ final class AES implements AESInterface
     /**
      * AES block size in bytes. Fixed at 16 for AES.
      */
-    protected int $block_size = 16;
+    protected int $blockSize = 16;
 
     /**
      * Returns the AES block size in bytes.
      */
     public function getBlockSize(): int
     {
-        return $this->block_size;
+        return $this->blockSize;
     }
 
     /**
@@ -97,7 +97,7 @@ final class AES implements AESInterface
      */
     public function pad(string $text): string
     {
-        $paddingSize = $this->block_size - (strlen($text) % $this->block_size);
+        $paddingSize = $this->blockSize - (strlen($text) % $this->blockSize);
 
         return $text . str_repeat(chr(0), $paddingSize - 1) . chr($paddingSize & 0xFF);
     }
@@ -113,7 +113,7 @@ final class AES implements AESInterface
     {
         $length = ord($text[strlen($text) - 1]);
 
-        if (!$length || $length > $this->block_size) {
+        if (!$length || $length > $this->blockSize) {
             throw new LogicException('Length incorrect.');
         }
 

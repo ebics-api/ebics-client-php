@@ -67,7 +67,7 @@ interface AESInterface
      * @param string $data   Block-aligned plaintext (length must be a multiple of the block size).
      * @param string $key    Raw AES key (16 bytes for AES-128, 32 bytes for AES-256).
      * @param string $cipher OpenSSL cipher method (e.g. 'aes-128-cbc', 'aes-256-cbc').
-     * @param string $iv     Initialization vector (must be $block_size bytes).
+     * @param string $iv     Initialization vector (must be $blockSize bytes).
      *
      * @return string Ciphertext block (same length as input).
      *
@@ -84,7 +84,7 @@ interface AESInterface
      * @param string $data   Ciphertext block to decrypt.
      * @param string $key    Raw AES key (16 bytes for AES-128, 32 bytes for AES-256).
      * @param string $cipher OpenSSL cipher method (e.g. 'aes-128-cbc', 'aes-256-cbc').
-     * @param string $iv     Initialization vector (must be $block_size bytes).
+     * @param string $iv     Initialization vector (must be $blockSize bytes).
      *
      * @return string Decrypted block (same length as input, may contain padding bytes).
      *

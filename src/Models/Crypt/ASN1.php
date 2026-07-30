@@ -158,7 +158,7 @@ final class ASN1 implements ASN1Interface
     /**
      * Parse BER-encoding (internal recursive implementation).
      *
-     * Decodes a single TLV (Tag-Length-Value) element starting at $encoded_pos
+     * Decodes a single TLV (Tag-Length-Value) element starting at $encodedPos
      * within $encoded. $start tracks the absolute byte offset within the original
      * input, which is used to compute the 'start' and 'length' fields of each
      * returned element. Recursive calls are made for constructed types
@@ -166,15 +166,15 @@ final class ASN1 implements ASN1Interface
      *
      * @param string $encoded Raw BER-encoded bytes.
      * @param int $start Absolute byte offset of the current element in the original input.
-     * @param int $encoded_pos Read position within $encoded for the current call.
+     * @param int $encodedPos Read position within $encoded for the current call.
      *
      * @return array<string, mixed>|false Decoded element array, or false if the data is truncated or invalid.
      */
-    private function decodeBERInternal(string $encoded, int $start = 0, int $encoded_pos = 0): array|false
+    private function decodeBERInternal(string $encoded, int $start = 0, int $encodedPos = 0): array|false
     {
         $current = ['start' => $start];
 
-        $type = ord($encoded[$encoded_pos++]);
+        $type = ord($encoded[$encodedPos++]);
         $start++;
 
         $constructed = ($type >> 5) & 1;
@@ -184,7 +184,7 @@ final class ASN1 implements ASN1Interface
             $tag = 0;
             // process septets (since the eighth bit is ignored, it's not an octet)
             do {
-                $temp = ord($encoded[$encoded_pos++]);
+                 $temp = ord($encoded[$encodedPos++]);
                 $loop = $temp >> 7;
                 $tag <<= 7;
                 $tag |= $temp & 0x7F;
@@ -193,18 +193,18 @@ final class ASN1 implements ASN1Interface
         }
 
         // Length, as discussed in paragraph 8.1.3 of X.690-0207.pdf#page=13
-        $length = ord($encoded[$encoded_pos++]);
+        $length = ord($encoded[$encodedPos++]);
         $start++;
         if ($length == 0x80) { // indefinite length
             // "[A sender shall] use the indefinite form (see 8.1.3.6) if the encoding is constructed and is not all
             //  immediately available." -- paragraph 8.1.3.2.c
-            $length = strlen($encoded) - $encoded_pos;
+            $length = strlen($encoded) - $encodedPos;
         } elseif ($length & 0x80) { // definite length, long form
             // technically, the long form of the length can be represented by up to 126 octets (bytes), but we'll only
             // support it up to four.
             $length &= 0x7F;
-            $temp = substr($encoded, $encoded_pos, $length);
-            $encoded_pos += $length;
+            $temp = substr($encoded, $encodedPos, $length);
+            $encodedPos += $length;
             // For long-form definite length, the header length covers the tag byte plus all length octets.
             $current += ['headerlength' => $length + 2];
             $start += $length;
@@ -217,12 +217,12 @@ final class ASN1 implements ASN1Interface
             $current += ['headerlength' => 2];
         }
 
-        if ($length > (strlen($encoded) - $encoded_pos)) {
+        if ($length > (strlen($encoded) - $encodedPos)) {
             return false;
         }
 
-        $content = substr($encoded, $encoded_pos, $length);
-        $content_pos = 0;
+        $content = substr($encoded, $encodedPos, $length);
+        $contentPos = 0;
 
         // From this point $length reflects only the definite-length value and is not accurate for indefinite forms.
 
@@ -252,13 +252,13 @@ final class ASN1 implements ASN1Interface
                 $newcontent = [];
                 $remainingLength = $length;
                 while ($remainingLength > 0) {
-                    $temp = $this->decodeBERInternal($content, $start, $content_pos);
+                    $temp = $this->decodeBERInternal($content, $start, $contentPos);
                     if ($temp === false) {
                         break;
                     }
                     $length = $temp['length'];
                     // end-of-content octets - see paragraph 8.1.5
-                    if (substr($content, $content_pos + $length, 2) == "\0\0") {
+                    if (substr($content, $contentPos + $length, 2) == "\0\0") {
                         $length += 2;
                         $start += $length;
                         $newcontent[] = $temp;
@@ -267,7 +267,7 @@ final class ASN1 implements ASN1Interface
                     $start += $length;
                     $remainingLength -= $length;
                     $newcontent[] = $temp;
-                    $content_pos += $length;
+                    $contentPos += $length;
                 }
 
                 return [
@@ -292,11 +292,11 @@ final class ASN1 implements ASN1Interface
                 //if (strlen($content) != 1) {
                 //    return false;
                 //}
-                $current['content'] = (bool)ord($content[$content_pos]);
+                $current['content'] = (bool)ord($content[$contentPos]);
                 break;
             case self::TYPE_INTEGER:
             case self::TYPE_ENUMERATED:
-                $current['content'] = new BigInteger(substr($content, $content_pos), -256);
+                $current['content'] = new BigInteger(substr($content, $contentPos), -256);
                 break;
             case self::TYPE_REAL: // not currently supported
                 return false;
@@ -305,27 +305,27 @@ final class ASN1 implements ASN1Interface
                 // as the least significant bit, the number of unused bits in the final subsequent octet.
                 // The number shall be in the range zero to seven.
                 if (!$constructed) {
-                    $current['content'] = substr($content, $content_pos);
+                    $current['content'] = substr($content, $contentPos);
                 } else {
-                    $temp = $this->decodeBERInternal($content, $start, $content_pos);
+                    $temp = $this->decodeBERInternal($content, $start, $contentPos);
                     if ($temp === false) {
                         return false;
                     }
-                    $length -= (strlen($content) - $content_pos);
+                    $length -= (strlen($content) - $contentPos);
                 }
                 break;
             case self::TYPE_OCTET_STRING:
                 if (!$constructed) {
-                    $current['content'] = substr($content, $content_pos);
+                    $current['content'] = substr($content, $contentPos);
                 } else {
                     $current['content'] = '';
                     $length = 0;
-                    while (substr($content, $content_pos, 2) != "\0\0") {
-                        $temp = $this->decodeBERInternal($content, $length + $start, $content_pos);
+                    while (substr($content, $contentPos, 2) != "\0\0") {
+                        $temp = $this->decodeBERInternal($content, $length + $start, $contentPos);
                         if ($temp === false) {
                             return false;
                         }
-                        $content_pos += $temp['length'];
+                        $contentPos += $temp['length'];
                         // all subtags should be octet strings
                         //if ($temp['type'] != self::TYPE_OCTET_STRING) {
                         //    return false;
@@ -333,7 +333,7 @@ final class ASN1 implements ASN1Interface
                         $current['content'] .= $temp['content'];
                         $length += $temp['length'];
                     }
-                    if (substr($content, $content_pos, 2) == "\0\0") {
+                    if (substr($content, $contentPos, 2) == "\0\0") {
                         $length += 2; // +2 for the EOC
                     }
                 }
@@ -348,25 +348,25 @@ final class ASN1 implements ASN1Interface
             case self::TYPE_SET:
                 $offset = 0;
                 $current['content'] = [];
-                $content_len = strlen($content);
-                while ($content_pos < $content_len) {
+                $contentLen = strlen($content);
+                while ($contentPos < $contentLen) {
                     // if indefinite length construction was used, and we have an end-of-content string next
                     // see paragraphs 8.1.1.3, 8.1.3.2, 8.1.3.6, 8.1.5, and (for an example) 8.6.4.2
-                    if (!isset($current['headerlength']) && substr($content, $content_pos, 2) == "\0\0") {
+                    if (!isset($current['headerlength']) && substr($content, $contentPos, 2) == "\0\0") {
                         $length = $offset + 2; // +2 for the EOC
                         break 2;
                     }
-                    $temp = $this->decodeBERInternal($content, $start + $offset, $content_pos);
+                    $temp = $this->decodeBERInternal($content, $start + $offset, $contentPos);
                     if ($temp === false) {
                         return false;
                     }
-                    $content_pos += $temp['length'];
+                    $contentPos += $temp['length'];
                     $current['content'][] = $temp;
                     $offset += $temp['length'];
                 }
                 break;
             case self::TYPE_OBJECT_IDENTIFIER:
-                $current['content'] = $this->decodeOID(substr($content, $content_pos));
+                $current['content'] = $this->decodeOID(substr($content, $contentPos));
                 break;
             /* Each character string type shall be encoded as if it had been declared:
                [UNIVERSAL x] IMPLICIT OCTET STRING
@@ -396,11 +396,11 @@ final class ASN1 implements ASN1Interface
             case self::TYPE_UTF8_STRING:
                 // Unicode encoded as UTF-8
             case self::TYPE_BMP_STRING:
-                $current['content'] = substr($content, $content_pos);
+                $current['content'] = substr($content, $contentPos);
                 break;
             case self::TYPE_UTC_TIME:
             case self::TYPE_GENERALIZED_TIME:
-                $current['content'] = $this->decodeTime(substr($content, $content_pos), $tag);
+                $current['content'] = $this->decodeTime(substr($content, $contentPos), $tag);
         }
 
         $start += $length;

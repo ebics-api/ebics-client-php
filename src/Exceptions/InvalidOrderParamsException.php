@@ -20,7 +20,7 @@ final class InvalidOrderParamsException extends EbicsResponseException
             'position in the original order file that marks the starting point of the transaction ' .
             'details to be transmitted. The order details after the specified offset position are returned. ' .
             'If the value specified for offset is higher than the total number of order ' .
-            'details, the error EBICS_INVALID_ORDER_PARAMS is returned.' .
+            'details, the error EBICS_INVALID_ORDER_PARAMS is returned. ' .
             'The error EBICS_INVALID_ORDER_PARAMS may also be returned for FUL or FDL orders when ' .
             'the there is a mismatch between the order type and file format set up in the server configuration ' .
             'and the request from the client.'

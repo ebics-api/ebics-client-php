@@ -528,7 +528,7 @@ final class EbicsClient implements EbicsClientInterface
             $this->logger->debug('upload_transfer_segment', [
                 'transaction_id' => $segment->getTransactionId(),
                 'segment_number' => $segment->getSegmentNumber(),
-                'is_last_segment' => $segment->getIsLastSegment(),
+                'is_last_segment' => $segment->isLastSegment(),
             ]);
 
             $request = $this->requestFactory->createTransferUpload(
@@ -536,7 +536,7 @@ final class EbicsClient implements EbicsClientInterface
                 $segment->getTransactionKey(),
                 $segment->getOrderData(),
                 $segment->getSegmentNumber(),
-                $segment->getIsLastSegment()
+                $segment->isLastSegment()
             );
             $response = $this->httpClient->post($this->bank->getUrl(), $request);
             $this->checkH00XReturnCode($request, $response);
@@ -892,7 +892,7 @@ final class EbicsClient implements EbicsClientInterface
                 $segment = $this->segmentFactory->createTransferSegment();
                 $segment->setTransactionKey($transaction->getKey());
                 $segment->setSegmentNumber($orderDataChunkId + 1);
-                $segment->setIsLastSegment($segment->getSegmentNumber() === $transaction->getNumSegments());
+                $segment->setLastSegment($segment->getSegmentNumber() === $transaction->getNumSegments());
                 $segment->setOrderData($orderDataChunk);
 
                 $segment->setNumSegments($transaction->getNumSegments());

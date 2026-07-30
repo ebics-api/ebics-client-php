@@ -104,7 +104,7 @@ abstract class RequestFactory
             ->setTransactionKey($transactionKey)
             ->setOrderData($orderData)
             ->setSegmentNumber($segmentNumber)
-            ->setIsLastSegment($isLastSegment);
+            ->setLastSegment($isLastSegment);
 
         return $this
             ->createRequestBuilderInstance()
@@ -117,7 +117,7 @@ abstract class RequestFactory
                     })->addMutable(function (MutableBuilder $builder) use ($context) {
                         $builder
                             ->addTransactionPhase(MutableBuilder::PHASE_TRANSFER)
-                            ->addSegmentNumber($context->getSegmentNumber(), $context->getIsLastSegment());
+                            ->addSegmentNumber($context->getSegmentNumber(), $context->isLastSegment());
                     });
                 })->addBody(function (BodyBuilder $builder) use ($context) {
                     $builder->addDataTransfer(function (DataTransferBuilder $builder) use ($context) {
@@ -140,7 +140,7 @@ abstract class RequestFactory
             ->setBank($this->bank)
             ->setTransactionId($transactionId)
             ->setSegmentNumber($segmentNumber)
-            ->setIsLastSegment($isLastSegment);
+            ->setLastSegment($isLastSegment);
 
         return $this
             ->createRequestBuilderInstance()
@@ -153,7 +153,7 @@ abstract class RequestFactory
                     })->addMutable(function (MutableBuilder $builder) use ($context) {
                         $builder
                             ->addTransactionPhase(MutableBuilder::PHASE_TRANSFER)
-                            ->addSegmentNumber($context->getSegmentNumber(), $context->getIsLastSegment());
+                            ->addSegmentNumber($context->getSegmentNumber(), $context->isLastSegment());
                     });
                 })->addBody();
             })

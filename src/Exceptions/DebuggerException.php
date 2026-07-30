@@ -2,7 +2,7 @@
 
 namespace EbicsApi\Ebics\Exceptions;
 
-use Exception;
+use RuntimeException;
 
 /**
  * DebuggerException class representation.
@@ -10,7 +10,7 @@ use Exception;
  * @license http://www.opensource.org/licenses/mit-license.html  MIT License
  * @author Andrew Svirin
  */
-final class DebuggerException extends Exception
+final class DebuggerException extends RuntimeException
 {
     private string $url;
     private string $requestMessage;
@@ -20,7 +20,7 @@ final class DebuggerException extends Exception
         $this->url = $url;
         $this->requestMessage = $requestMessage;
 
-        parent::__construct();
+        parent::__construct('A debugging error occurred while processing an HTTP request.');
     }
 
     public function getUrl(): string

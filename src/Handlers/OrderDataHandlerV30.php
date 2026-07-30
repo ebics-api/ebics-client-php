@@ -64,7 +64,7 @@ final class OrderDataHandlerV30 extends OrderDataHandler
         $x509CertificateValueDe = $this->base64Service->decode($x509CertificateValue);
 
         if (null === $x509CertificateValue) {
-            throw new RuntimeException('Version 3.0 is not supported for not certified banks yet.');
+            throw new RuntimeException('EBICS 3.0 is not supported for not certified banks.');
         }
 
         $certificateContent
@@ -97,7 +97,7 @@ final class OrderDataHandlerV30 extends OrderDataHandler
         $x509CertificateValueDe = $this->base64Service->decode($x509CertificateValue);
 
         if (null === $x509CertificateValue) {
-            throw new RuntimeException('Version 3.0 is not supported for not certified banks yet.');
+            throw new RuntimeException('EBICS 3.0 is not supported for not certified banks.');
         }
 
         $certificateContent
