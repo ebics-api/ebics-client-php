@@ -22,35 +22,14 @@ Ideal for fintechs, ERPs, payment processors, and enterprises needing a robust E
 
 ### Premium Features
 
-- **🚀 Instant deployment** — Docker-based microservice, deploy in minutes.
-- **🔌 REST API** — Complete EBICS operations via simple HTTP calls. No PHP expertise needed.
-- **🧪 Dummy EBICS Server** — Develop and test your integration locally without a real bank.
-
-  | Key            | Value                                 |
-  |----------------|---------------------------------------|
-  | **URL**        | `https://localhost/ebics-server-stub` |
-  | **Host ID**    | `EBICSSTUB`                           |
-  | **Partner ID** | `P07`                                 |
-  | **User ID**    | `U07`                                 |
-
-- **🤖 MCP Server for AI Agents** — Connect AI coding assistants directly to your EBICS server.
-
-  ```json
-  {
-    "mcpServers": {
-      "ebics-server": {
-        "type": "remote",
-        "url": "http://localhost/mcp",
-        "headers": {
-          "Authorization": "Key YOUR_API_KEY_HERE"
-        }
-      }
-    }
-  }
-  ```
-
-- **📊 Admin dashboard** — Monitor transactions, manage keys, view logs.
-- **🛡️ Priority support** — Direct access to the development team.
+- **🏦 Multiple Bank connections** — Certificates, activation, keyring in a few clicks. [Bank connections →](https://sites.google.com/view/ebics-api-client/bank-connections?authuser=0)  
+- **💸 Bank operations via simple form** — Statements and payments without EBICS protocol plumbing. [Bank operations →](https://sites.google.com/view/ebics-api-client/bank-operations?authuser=0)  
+- **📝 Payment builder** — Create multi-order SEPA files in minutes, store and reuse them, send straight to the bank. [Bank operations →](https://sites.google.com/view/ebics-api-client/bank-operations?authuser=0)  
+- **⏰ Automation that runs while you sleep** — Scheduled jobs, webhooks, no missed statements. [Scheduler jobs →](https://sites.google.com/view/ebics-api-client/scheduler-jobs?authuser=0)  
+- **🚀 Live in minutes** — Docker deployment or Installation scrip, no PHP expertise needed.  
+- **🧪 Test without a real bank** — Dummy EBICS server for local development.  
+- **🤖 AI agents, connected** — MCP server for Claude, Cursor, and more.  
+- **🛡 Priority support** — Direct line to the dev team.  
 
 **👉 [Try the DEMO](https://tinyurl.com/safe-ebics) · [Learn more](https://sites.google.com/view/ebics-api-client) · [Watch the video](https://youtu.be/S14Qkt5m0NI)**
 
