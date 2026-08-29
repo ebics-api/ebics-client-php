@@ -4,6 +4,7 @@ namespace EbicsApi\Ebics\Contracts;
 
 use DOMDocument;
 use EbicsApi\Ebics\Exceptions\EbicsException;
+use EbicsApi\Ebics\Exceptions\SignatureEbicsException;
 use EbicsApi\Ebics\Models\DownloadSegment;
 use EbicsApi\Ebics\Models\Http\Request;
 use EbicsApi\Ebics\Models\Http\Response;
@@ -234,4 +235,27 @@ interface ResponseHandlerInterface
      * @throws EbicsException If the response indicates an error
      */
     public function checkResponseReturnCode(Request $request, Response $response): void;
+
+    /**
+     * Verify the bank authentication signature (X002) of the response.
+     *
+     * The verification follows the EBICS authentication signature scheme:
+     * 1. The ds:DigestValue must match the SHA-256 hash of the canonicalized
+     *    (C14N) nodes marked with authenticate="true".
+     * 2. The ds:SignatureValue must be a valid RSASSA-PKCS1-v1_5 with SHA-256
+     *    signature (made by the bank X002 private key) over the canonicalized
+     *    ds:SignedInfo element.
+     *
+     * Verification is skipped for responses without an AuthSignature element
+     * (HEV and unsecured INI/HIA/H3K responses).
+     *
+     * @param Response $response The response to verify
+     * @param Keyring $keyring The keyring containing the bank X002 public key
+     *
+     * @return void
+     *
+     * @throws SignatureEbicsException If the digest or the signature is invalid,
+     *   or if the bank X002 key is not available in the keyring
+     */
+    public function verifyAuthSignature(Response $response, Keyring $keyring): void;
 }

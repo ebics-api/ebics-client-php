@@ -10,7 +10,7 @@ use EbicsApi\Ebics\Builders\Request\RootBuilder;
 use EbicsApi\Ebics\Builders\Request\StaticBuilder;
 use EbicsApi\Ebics\Contexts\RequestContext;
 use EbicsApi\Ebics\Contracts\SignatureInterface;
-use EbicsApi\Ebics\Models\Customer;
+use EbicsApi\Ebics\Models\GenericOrderData;
 use EbicsApi\Ebics\Models\Http\Request;
 use EbicsApi\Ebics\Models\Order\StandardOrder;
 use EbicsApi\Ebics\Models\Order\StandardOrderResult;
@@ -96,9 +96,9 @@ final class H3K extends StandardOrder
             ->popInstance();
     }
 
-    public function createOrderData(): Customer
+    public function createOrderData(): GenericOrderData
     {
-        $xml = new Customer();
+        $xml = new GenericOrderData();
 
         // Add H3KRequestOrderData to root.
         $xmlH3KRequestOrderData = $xml->createElementNS(

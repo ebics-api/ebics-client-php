@@ -12,24 +12,24 @@ use EbicsApi\Ebics\Contracts\OrderDataInterface;
  */
 abstract class XmlData extends DOMDocument implements OrderDataInterface
 {
+    use ChunkableData;
+
     public function __construct()
     {
-        parent::__construct('1.0', 'utf-8');
-        $this->preserveWhiteSpace = false;
+        parent::__construct(encoding: 'utf-8');
     }
 
     public function getContent(): string
     {
-        $content = (string)$this->saveXML();
-        $content = str_replace(
-            '<?xml version="1.0" encoding="utf-8"?>',
-            "<?xml version='1.0' encoding='utf-8'?>",
-            $content
-        );
-        $content = str_replace(["\n", "\r", "\t"], '', $content);
-        $content = trim($content);
+        return (string)$this->saveXML();
+    }
 
-        return $content;
+    public function getTrimmedContent(): string
+    {
+        $this->preserveWhiteSpace = false;
+        $content = (string)$this->saveXML();
+
+        return preg_replace('/[\r\n]/u', '', $content);
     }
 
     public function getFormattedContent(): string

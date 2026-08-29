@@ -33,6 +33,13 @@ interface DataInterface
     public function getContent(): string;
 
     /**
+     * Get trimmed content
+     *
+     * @return string The raw data content
+     */
+    public function getTrimmedContent(): string;
+
+    /**
      * Get a formatted (human-readable) representation of the content.
      *
      * Returns the data in a formatted form suitable for display,
@@ -41,4 +48,43 @@ interface DataInterface
      * @return string The formatted data content
      */
     public function getFormattedContent(): string;
+
+    /**
+     * Check if the data should be chunked for upload.
+     *
+     * @return bool True if data should be split into chunks, false otherwise
+     */
+    public function shouldChunk(): bool;
+
+    /**
+     * Get data chunks for upload using default chunk size.
+     *
+     * @return array<int, string> Array of data chunks
+     */
+    public function getChunks(): array;
+
+    /**
+     * Get data chunks for upload with custom chunk size.
+     *
+     * @param int $chunkSize Maximum size of each chunk
+     *
+     * @return array<int, string> Array of data chunks
+     */
+    public function getChunksWithSize(int $chunkSize): array;
+
+    /**
+     * Get number of chunks for upload using default chunk size.
+     *
+     * @return int Number of chunks
+     */
+    public function getNumChunks(): int;
+
+    /**
+     * Get number of chunks for upload with custom chunk size.
+     *
+     * @param int $chunkSize Maximum size of each chunk
+     *
+     * @return int Number of chunks
+     */
+    public function getNumChunksWithSize(int $chunkSize): int;
 }

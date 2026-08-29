@@ -155,6 +155,34 @@ final class CryptService implements CryptServiceInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function verify(
+        Key $publicKey,
+        string $message,
+        string $signature,
+        string $version
+    ): bool {
+        $rsa = $this->rsaFactory->createPublic($publicKey);
+
+        switch ($version) {
+            case SignatureInterface::A_VERSION6:
+                $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+                $rsa->setHash('sha256');
+                $rsa->setMGFHash('sha256');
+                break;
+            case SignatureInterface::A_VERSION5:
+            case SignatureInterface::X_VERSION2:
+            default:
+                $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
+                $rsa->setHash('sha256');
+                break;
+        }
+
+        return $rsa->verify($message, $signature);
+    }
+
+    /**
      * Encode data for RSA signature (does not perform the RSA operation).
      *
      * Produces the encoded message representative that would be signed.

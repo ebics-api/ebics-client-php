@@ -18,6 +18,7 @@ use EbicsApi\Ebics\Contracts\SignatureInterface;
 use EbicsApi\Ebics\Exceptions\EbicsException;
 use EbicsApi\Ebics\Exceptions\EbicsResponseException;
 use EbicsApi\Ebics\Exceptions\PasswordEbicsException;
+use EbicsApi\Ebics\Exceptions\SignatureEbicsException;
 use EbicsApi\Ebics\Factories\CertificateX509Factory;
 use EbicsApi\Ebics\Factories\Crypt\BigIntegerFactory;
 use EbicsApi\Ebics\Factories\Crypt\RSAFactory;
@@ -40,7 +41,6 @@ use EbicsApi\Ebics\Models\Crypt\KeyPair;
 use EbicsApi\Ebics\Models\DownloadSegment;
 use EbicsApi\Ebics\Models\DownloadTransaction;
 use EbicsApi\Ebics\Models\EbicsClientOptions;
-use EbicsApi\Ebics\Models\EmptyOrderData;
 use EbicsApi\Ebics\Models\Http\Request;
 use EbicsApi\Ebics\Models\Http\Response;
 use EbicsApi\Ebics\Models\InitializationSegment;
@@ -228,7 +228,8 @@ final class EbicsClient implements EbicsClientInterface
         $transaction = $this->initializeTransaction(
             function () use ($order) {
                 return $order->createRequest();
-            }
+            },
+            false
         );
 
         $this->logger->info('complete_initialization_order', [
@@ -271,6 +272,7 @@ final class EbicsClient implements EbicsClientInterface
 
         $request = $order->createRequest();
         $response = $this->httpClient->post($this->bank->getUrl(), $request);
+        $this->verifyResponseAuthSignature($response);
         $this->responseHandler->checkResponseReturnCode($request, $response);
 
         $this->logger->info('complete_standard_order', [
@@ -362,20 +364,13 @@ final class EbicsClient implements EbicsClientInterface
             function (UploadTransaction $transaction) use ($order) {
                 $order->setTransaction($transaction);
                 $orderData = $order->getOrderData();
+                $orderContent = $orderData->getTrimmedContent();
                 $this->schemaValidator->validate($orderData);
 
-                if ($orderData->getContent() === EmptyOrderData::CONTENT) {
-                    $transaction->setOrderData([$orderData->getContent()]);
-                    $transaction->setNumSegments(0);
-                } else {
-                    $orderDataChunks = [];
-                    for ($i = 0; $i < strlen($orderData->getContent()); $i += UploadTransaction::CHUNK_SIZE) {
-                        $orderDataChunks[] = substr($orderData->getContent(), $i, UploadTransaction::CHUNK_SIZE);
-                    }
-                    $transaction->setOrderData($orderDataChunks);
-                    $transaction->setNumSegments(count($orderDataChunks));
-                }
-                $transaction->setDigest($this->cryptService->hash($orderData->getContent()));
+                $chunks = $orderData->getChunks();
+                $transaction->setOrderData($chunks);
+                $transaction->setNumSegments($orderData->getNumChunks());
+                $transaction->setDigest($this->cryptService->hash($orderContent));
 
                 return $order->createRequest();
             }
@@ -485,6 +480,7 @@ final class EbicsClient implements EbicsClientInterface
         $request = $this->requestFactory->createTransferReceipt($transaction->getId(), $acknowledged);
         $response = $this->httpClient->post($this->bank->getUrl(), $request);
 
+        $this->verifyResponseAuthSignature($response);
         $this->checkH00XReturnCode($request, $response);
 
         $transaction->setReceipt($response);
@@ -539,6 +535,7 @@ final class EbicsClient implements EbicsClientInterface
                 $segment->isLastSegment()
             );
             $response = $this->httpClient->post($this->bank->getUrl(), $request);
+            $this->verifyResponseAuthSignature($response);
             $this->checkH00XReturnCode($request, $response);
 
             $segment->setResponse($response);
@@ -606,6 +603,38 @@ final class EbicsClient implements EbicsClientInterface
         EbicsExceptionFactory::buildExceptionFromCode($errorCode, $reportText, $request, $response);
     }
 
+    /**
+     * Verify the bank authentication signature (X002) of a response.
+     *
+     * Every secured response is verified after the bank keys are received via
+     * HPB. The HPB response itself is exempt because it delivers the bank keys
+     * and cannot be verified against them. A failed verification aborts the
+     * transaction with a SignatureEbicsException.
+     *
+     * @param Response $response The bank's response to verify
+     *
+     * @return void
+     *
+     * @throws SignatureEbicsException If the signature is invalid
+     */
+    private function verifyResponseAuthSignature(Response $response): void
+    {
+        try {
+            $this->responseHandler->verifyAuthSignature($response, $this->keyring);
+        } catch (SignatureEbicsException $exception) {
+            $this->logger->error('ebics_response_auth_signature_invalid', [
+                'error' => $exception->getMessage(),
+                'url' => $this->bank->getUrl(),
+            ]);
+
+            throw $exception;
+        }
+
+        $this->logger->debug('bank_auth_signature_verified', [
+            'url' => $this->bank->getUrl(),
+        ]);
+    }
+
 
     /**
      * Initialize an EBICS transaction by sending the request and receiving the response.
@@ -624,21 +653,25 @@ final class EbicsClient implements EbicsClientInterface
      * - For uploads: Transaction key for encryption
      *
      * @param callable $requestClosure Closure that creates the XML request
+     * @param bool $verifyBankSignature Whether the response bank authentication
+     *   signature must be verified
      *
      * @return InitializationTransaction The initialized transaction object
      *
      * @throws EbicsException If request creation fails
      * @throws EbicsResponseException If bank returns an error response
      */
-    private function initializeTransaction(callable $requestClosure): InitializationTransaction
-    {
+    private function initializeTransaction(
+        callable $requestClosure,
+        bool $verifyBankSignature = true
+    ): InitializationTransaction {
         $this->logger->debug('create_initialization_transaction');
 
         $transaction = $this->transactionFactory->createInitializationTransaction();
 
         $request = call_user_func($requestClosure);
 
-        $segment = $this->retrieveInitializationSegment($request);
+        $segment = $this->retrieveInitializationSegment($request, $verifyBankSignature);
         $transaction->setInitializationSegment($segment);
 
         $this->logger->info('initialization_transaction_completed');
@@ -662,20 +695,27 @@ final class EbicsClient implements EbicsClientInterface
      * as these are single-phase transactions.
      *
      * @param Request $request The XML request to send
+     * @param bool $verifyBankSignature Whether the response bank authentication
+     *   signature must be verified
      *
      * @return InitializationSegment The response segment with transaction details
      *
      * @throws EbicsException If HTTP request fails
      * @throws EbicsResponseException If bank returns an error response
      */
-    private function retrieveInitializationSegment(Request $request): InitializationSegment
-    {
+    private function retrieveInitializationSegment(
+        Request $request,
+        bool $verifyBankSignature = true
+    ): InitializationSegment {
         $this->logger->debug('send_initialization_request', [
             'url' => $this->bank->getUrl(),
         ]);
 
         $response = $this->httpClient->post($this->bank->getUrl(), $request);
 
+        if ($verifyBankSignature) {
+            $this->verifyResponseAuthSignature($response);
+        }
         $this->checkH00XReturnCode($request, $response);
 
         $this->logger->debug('initialization_segment_received', [
@@ -824,6 +864,7 @@ final class EbicsClient implements EbicsClientInterface
 
         $response = $this->httpClient->post($this->bank->getUrl(), $request);
 
+        $this->verifyResponseAuthSignature($response);
         $this->checkH00XReturnCode($request, $response);
 
         return $this->responseHandler->extractDownloadSegment($response);
@@ -877,6 +918,7 @@ final class EbicsClient implements EbicsClientInterface
         $request = call_user_func_array($requestClosure, [$transaction]);
 
         $response = $this->httpClient->post($this->bank->getUrl(), $request);
+        $this->verifyResponseAuthSignature($response);
         $this->checkH00XReturnCode($request, $response);
 
         $uploadSegment = $this->responseHandler->extractUploadSegment($request, $response);

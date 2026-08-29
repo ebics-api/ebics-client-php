@@ -228,6 +228,19 @@ interface RSAInterface
     public function emsaPssVerify($m, $em, $emBits = null): bool;
 
     /**
+     * Verify a signature over the message using the loaded public key.
+     *
+     * Delegates to RSASSA-PSS-VERIFY or RSASSA-PKCS1-V1_5-VERIFY depending
+     * on the signature mode set via setSignatureMode().
+     *
+     * @param string $message The original message that was signed.
+     * @param string $signature The raw binary signature to verify.
+     *
+     * @return bool True if the signature is valid, false otherwise.
+     */
+    public function verify(string $message, string $signature): bool;
+
+    /**
      * Change password for private key.
      *
      * @param KeyPair $keyPair

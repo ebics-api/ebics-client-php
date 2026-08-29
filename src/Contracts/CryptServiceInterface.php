@@ -137,6 +137,36 @@ interface CryptServiceInterface
     ): string;
 
     /**
+     * Verify an RSA signature over the message.
+     *
+     * The behaviour depends on the EBICS authentication version:
+     *
+     *  - **A005 / X002** (RSA-PKCS#1 v1.5): Verifies RSASSA-PKCS1-v1_5 with SHA-256.
+     *    Mirrors the encrypt() A005 path: the signature must be a PKCS#1 v1.5
+     *    signature of the SHA-256 DigestInfo structure computed over the message.
+     *  - **A006** (RSA-PSS): Verifies RSASSA-PSS with SHA-256 and MGF1-SHA-256.
+     *    Mirrors the encrypt() A006 path.
+     *
+     * Used to verify the bank authentication signature of EBICS responses.
+     * The bank signature version is typically X002 (PKCS#1 v1.5), but A005/A006
+     * are also accepted for environments where the bank uses the same scheme
+     * as the client authentication signature.
+     *
+     * @param Key    $publicKey RSA public key (bank Signature X002 or A)
+     * @param string $message   The original message that was signed (e.g., canonicalized ds:SignedInfo)
+     * @param string $signature Raw binary signature (base64-decoded ds:SignatureValue)
+     * @param string $version   EBICS version constant (SignatureInterface::A_VERSION5, A_VERSION6 or X_VERSION2)
+     *
+     * @return bool True if the signature is valid, false otherwise
+     */
+    public function verify(
+        Key $publicKey,
+        string $message,
+        string $signature,
+        string $version
+    ): bool;
+
+    /**
      * Generate an RSA key pair for EBICS signatures.
      *
      * @param string $password  Password to encrypt the private key

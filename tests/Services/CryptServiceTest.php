@@ -238,6 +238,40 @@ class CryptServiceTest extends AbstractEbicsTestCase
         self::assertTrue($this->cryptService->checkPrivateKey($newKeyPair->getPrivateKey(), $newPassword));
     }
 
+    public function testVerifySignatureRoundtrip(): void
+    {
+        $password = 'testpassword';
+        $keyPair = $this->cryptService->generateKeyPair($password);
+        $message = 'canonicalized signed info content';
+
+        // Sign like the X002 authentication signature path (PKCS#1 v1.5 over DigestInfo).
+        $signature = $this->cryptService->encrypt(
+            $keyPair->getPrivateKey(),
+            $password,
+            SignatureInterface::X_VERSION2,
+            $this->cryptService->hash($message)
+        );
+
+        self::assertTrue($this->cryptService->verify($keyPair->getPublicKey(), $message, $signature, 'X002'));
+    }
+
+    public function testVerifySignatureWithWrongKey(): void
+    {
+        $password = 'testpassword';
+        $signingKeyPair = $this->cryptService->generateKeyPair($password);
+        $otherKeyPair = $this->cryptService->generateKeyPair($password);
+        $message = 'canonicalized signed info content';
+
+        $signature = $this->cryptService->encrypt(
+            $signingKeyPair->getPrivateKey(),
+            $password,
+            SignatureInterface::X_VERSION2,
+            $this->cryptService->hash($message)
+        );
+
+        self::assertFalse($this->cryptService->verify($otherKeyPair->getPublicKey(), $message, $signature, 'X002'));
+    }
+
     public function testSignWithA005(): void
     {
         $password = 'testpassword';

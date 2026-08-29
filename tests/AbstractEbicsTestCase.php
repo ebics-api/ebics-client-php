@@ -4,13 +4,15 @@ namespace EbicsApi\Ebics\Tests;
 
 use EbicsApi\Ebics\Contracts\EbicsClientInterface;
 use EbicsApi\Ebics\Contracts\LoggerInterface;
+use EbicsApi\Ebics\Contracts\SignatureInterface;
 use EbicsApi\Ebics\Contracts\X509GeneratorInterface;
 use EbicsApi\Ebics\EbicsClient;
 use EbicsApi\Ebics\Factories\Crypt\RSAFactory;
-use EbicsApi\Ebics\Factories\Crypt\X509Factory;
 use EbicsApi\Ebics\Factories\SignatureFactory;
+use EbicsApi\Ebics\Factories\Crypt\X509Factory;
 use EbicsApi\Ebics\Models\Bank;
 use EbicsApi\Ebics\Models\Crypt\Key;
+use EbicsApi\Ebics\Models\Crypt\KeyPair;
 use EbicsApi\Ebics\Models\Crypt\RSA;
 use EbicsApi\Ebics\Models\CustomerCreditTransfer;
 use EbicsApi\Ebics\Models\CustomerDirectDebit;
@@ -23,6 +25,7 @@ use EbicsApi\Ebics\Services\FakerHttpClient;
 use EbicsApi\Ebics\Services\FileKeyringManager;
 use EbicsApi\Ebics\Services\Processor\AESEncryptor;
 use EbicsApi\Ebics\Services\TransactionKeyResolver;
+use EbicsApi\Ebics\Tests\Helpers\SigningHttpClient;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -93,7 +96,16 @@ abstract class AbstractEbicsTestCase extends TestCase
 
         $options = new EbicsClientOptions();
         if (true === $fake) {
-            $options->setHttpClient(new FakerHttpClient($this->fixtures));
+            // Re-sign faked responses with a known bank key pair and install
+            // the matching public key, so that the client signature
+            // verification runs against the faked responses.
+            $bankKeys = $this->createFakeBankKeys();
+            $keyring->setBankSignatureX($this->createFakeBankSignature($bankKeys));
+            $options->setHttpClient(new SigningHttpClient(
+                new FakerHttpClient($this->fixtures),
+                $bankKeys,
+                'mysecret'
+            ));
         }
         if (true === $debug) {
             $options->setHttpClient(new DebuggerHttpClient());
@@ -131,6 +143,34 @@ abstract class AbstractEbicsTestCase extends TestCase
         $keyringManager = new FileKeyringManager();
 
         return $keyringManager->loadKeyring($keyringPath, $password, $version);
+    }
+
+    /**
+     * Deterministic key pair playing the bank role for faked responses.
+     */
+    private function createFakeBankKeys(): KeyPair
+    {
+        $keys = json_decode((string)file_get_contents($this->fixtures . '/keys.json'));
+        $rsaFactory = new RSAFactory(new AESEncryptor(new TransactionKeyResolver()));
+        $rsa = $rsaFactory->createPrivate(
+            new Key($keys->X002, RSA::PRIVATE_FORMAT_PKCS1),
+            'mysecret'
+        );
+
+        return new KeyPair(
+            new Key((string)$rsa->getPublicKey(RSA::PUBLIC_FORMAT_PKCS1), RSA::PUBLIC_FORMAT_PKCS1),
+            new Key($keys->X002, RSA::PRIVATE_FORMAT_PKCS1),
+            'mysecret'
+        );
+    }
+
+    private function createFakeBankSignature(KeyPair $bankKeys): SignatureInterface
+    {
+        $signatureFactory = new SignatureFactory(
+            new RSAFactory(new AESEncryptor(new TransactionKeyResolver()))
+        );
+
+        return $signatureFactory->createSignatureXFromKeys($bankKeys);
     }
 
     protected function saveKeyring(int $credentialsId, Keyring $keyring): void

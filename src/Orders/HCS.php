@@ -11,7 +11,7 @@ use EbicsApi\Ebics\Builders\Request\OrderDetailsBuilder;
 use EbicsApi\Ebics\Builders\Request\RootBuilder;
 use EbicsApi\Ebics\Builders\Request\StaticBuilder;
 use EbicsApi\Ebics\Contexts\RequestContext;
-use EbicsApi\Ebics\Models\Customer;
+use EbicsApi\Ebics\Models\GenericOrderData;
 use EbicsApi\Ebics\Models\Http\Request;
 use EbicsApi\Ebics\Models\Keyring;
 use EbicsApi\Ebics\Models\Order\UploadOrder;
@@ -62,7 +62,8 @@ final class HCS extends UploadOrder
         $this->userSignatureHandler->handle($signatureData, $this->transaction->getDigest());
 
         $signatureVersion = $this->context->getKeyring()->getUserSignatureAVersion();
-        $dataDigest = $this->orderDataHandler->hash($this->orderData->getContent());
+        $orderContent = $this->orderData->getTrimmedContent();
+        $dataDigest = $this->orderDataHandler->hash($orderContent);
 
         $this->context
             ->setOrderType('HCS')
@@ -126,9 +127,9 @@ final class HCS extends UploadOrder
             ->popInstance();
     }
 
-    public function createOrderData(): Customer
+    public function createOrderData(): GenericOrderData
     {
-        $xml = new Customer();
+        $xml = new GenericOrderData();
 
         // Add HCSRequestOrderData to root.
         $xmlHCSRequestOrderData = $xml->createElementNS(

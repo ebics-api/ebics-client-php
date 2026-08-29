@@ -12,9 +12,16 @@ use EbicsApi\Ebics\Contracts\OrderDataInterface;
  */
 final class TxtDocument implements OrderDataInterface
 {
+    use ChunkableData;
+
     private string $content;
 
     public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    public function getTrimmedContent(): string
     {
         return $this->content;
     }

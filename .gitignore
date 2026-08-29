@@ -1,10 +1,13 @@
 # IntellijIdea files
 .idea
 
+# Agents
+.agentbridge
+
 # Composer
 composer.lock
 vendor
 
+# Tests
 .phpunit.result.cache
-
 tests/_data

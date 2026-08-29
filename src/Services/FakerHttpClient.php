@@ -199,7 +199,13 @@ final class FakerHttpClient implements HttpClientInterface
             throw new LogicException('Response content is not valid.');
         }
 
+        // Compact XML to canonical form (same as EbicsResponseBuilder::sign()):
+        // Collapse whitespace between tags to nothing.
+        // Note: we do NOT trim text node values because C14N includes
+        // text node whitespace in canonical form, and signatures cover
+        // the compact-on-wire form, not a normalized form.
         $responseContent = preg_replace('/[\r\n]/u', '', $responseContent);
+        $responseContent = preg_replace('#>\s+<#', '><', $responseContent);
 
         if (!is_string($responseContent)) {
             throw new LogicException('Response content is not valid.');

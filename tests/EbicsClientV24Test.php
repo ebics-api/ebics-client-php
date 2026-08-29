@@ -12,9 +12,11 @@ use EbicsApi\Ebics\Orders\FDL;
 use EbicsApi\Ebics\Orders\FUL;
 use EbicsApi\Ebics\Orders\HEV;
 use EbicsApi\Ebics\Orders\HIA;
+use EbicsApi\Ebics\Orders\HKD;
 use EbicsApi\Ebics\Orders\HPB;
 use EbicsApi\Ebics\Orders\INI;
 use EbicsApi\Ebics\Services\ArrayLogger;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Silarhi\Cfonb\CfonbParser;
@@ -180,6 +182,31 @@ class EbicsClientV24Test extends AbstractEbicsTestCase
      * @param array $codes
      */
     #[DataProvider('serversDataProvider')]
+    #[Group('HKD')]
+    #[Group('HKD-V24')]
+    public function testHKD(int $credentialsId, array $codes): void
+    {
+        $client = $this->setupClientV24($credentialsId, $codes['HKD']['fake']);
+
+        $this->assertExceptionCode($codes['HKD']['code']);
+        $hkd = $client->executeDownloadOrder(new HKD());
+
+        $responseHandler = $client->getResponseHandler();
+        $code = $responseHandler->retrieveH00XReturnCode($hkd->getTransaction()->getLastSegment()->getResponse());
+        $reportText = $responseHandler->retrieveH00XReportText($hkd->getTransaction()->getLastSegment()->getResponse());
+        $this->assertResponseOk($code, $reportText);
+
+        $code = $responseHandler->retrieveH00XReturnCode($hkd->getTransaction()->getReceipt());
+        $reportText = $responseHandler->retrieveH00XReportText($hkd->getTransaction()->getReceipt());
+
+        $this->assertResponseDone($code, $reportText);
+    }
+
+    /**
+     * @param int $credentialsId
+     * @param array $codes
+     */
+    #[DataProvider('serversDataProvider')]
     #[Group('FDL')]
     #[Group('FDL-V24')]
     public function testFDL(int $credentialsId, array $codes): void
@@ -308,6 +335,7 @@ class EbicsClientV24Test extends AbstractEbicsTestCase
                     'INI' => ['code' => null, 'fake' => false],
                     'HIA' => ['code' => null, 'fake' => false],
                     'HPB' => ['code' => null, 'fake' => false],
+                    'HKD' => ['code' => null, 'fake' => false],
                     'FDL' => [
                         'camt.xxx.cfonb120.stm' => ['code' => '090005', 'fake' => false],
                         'camt.xxx.cfonb240.act' => ['code' => '090005', 'fake' => false],

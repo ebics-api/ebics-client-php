@@ -101,9 +101,9 @@ abstract class AuthSignatureHandler implements AuthSignatureHandlerInterface
 
         // Add ds:DigestValue to ds:Reference.
         $xmlDigestValue = $dom->createElementNS($ns, 'ds:DigestValue');
-        $canonicalizedHeader = $this->calculateC14N(
+        $canonicalizedHeader = $this->canonicalizeNodeSet(
             DOMHelper::safeItems($this->queryH00XXpath($dom, $signaturePath)),
-            $canonicalizationMethodAlgorithm
+            false
         );
         $canonicalizedHeaderHash = $this->cryptService->hash($canonicalizedHeader, $digestMethodAlgorithm);
         $digestValueNodeValue = $this->base64Service->encode($canonicalizedHeaderHash);

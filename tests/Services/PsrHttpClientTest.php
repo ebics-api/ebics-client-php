@@ -19,7 +19,7 @@ class PsrHttpClientTest extends TestCase
      */
     public function testPost(): void
     {
-        $responseContent = "<?xml version='1.0' encoding='utf-8'?><ResponseTest/>";
+        $responseContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ResponseTest/>\n";
 
         $stream = $this->createMock(StreamInterface::class);
         $streamFactory = $this->createMock(StreamFactoryInterface::class);

@@ -46,7 +46,7 @@ final class SPR extends UploadOrder
         $this->userSignatureHandler->handle($signatureData, $this->transaction->getDigest());
 
         $signatureVersion = $this->context->getKeyring()->getUserSignatureAVersion();
-        $dataDigest = $this->orderDataHandler->hash($this->orderData->getContent());
+        $dataDigest = $this->orderDataHandler->hash($this->orderData->getTrimmedContent());
 
         $this->context
             ->setOrderType('SPR')
