@@ -130,7 +130,7 @@ abstract class ResponseHandler implements ResponseHandlerInterface
     public function extractInitializationSegment(Response $response, Keyring $keyring): InitializationSegment
     {
         $transactionKeyEncoded = $this->retrieveH00XTransactionKey($response);
-        $transactionKey = $this->base64Service->decode($transactionKeyEncoded);
+        $transactionKey = $transactionKeyEncoded !== null ? $this->base64Service->decode($transactionKeyEncoded) : '';
         $orderDataEncrypted = $this->base64Service->decode($this->retrieveH00XOrderData($response));
 
         $orderDataCompressed = $this->cryptService->decryptOrderDataCompressed(
@@ -154,7 +154,7 @@ abstract class ResponseHandler implements ResponseHandlerInterface
         $transactionId = $this->retrieveH00XTransactionId($response);
         $transactionPhase = $this->retrieveH00XTransactionPhase($response);
         $transactionKeyEncoded = $this->retrieveH00XTransactionKey($response);
-        $transactionKey = $this->base64Service->decode($transactionKeyEncoded);
+        $transactionKey = $transactionKeyEncoded !== null ? $this->base64Service->decode($transactionKeyEncoded) : '';
         $numSegments = $this->retrieveH00XNumSegments($response);
         $segmentNumber = $this->retrieveH00XSegmentNumber($response);
         $orderDataEncrypted = $this->retrieveH00XOrderData($response);

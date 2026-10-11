@@ -13,10 +13,10 @@ use RuntimeException;
  */
 final class Base64Encoder implements Base64EncoderInterface
 {
-    /** Max encoded length = 10 * 1024 * 1024 (10 MB) */
-    private const MAX_ENCODED_LENGTH = 10485760;
-    /** Max raw length = MAX_ENCODED_LENGTH * 3 / 4 (~7.5 MB) */
-    private const MAX_RAW_LENGTH = 7864320;
+    /** Max encoded length = 512 * 1024 * 1024 (512 MB) */
+    private const MAX_ENCODED_LENGTH = 536870912;
+    /** Max raw length = MAX_ENCODED_LENGTH * 3 / 4 (~384 MB) */
+    private const MAX_RAW_LENGTH = 402653184;
 
     public function encode(string $data): string
     {
