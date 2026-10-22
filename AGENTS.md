@@ -27,7 +27,7 @@ The project uses Docker for a consistent development environment.
 docker/
 ├── docker-compose.yml
 └── php-cli/
-    ├── Dockerfile          (php:8.5.4-cli + xdebug + extensions)
+    ├── Dockerfile          (php:8.5.12-cli + xdebug + extensions)
     └── php.ini
 ```
 
@@ -35,7 +35,7 @@ docker/
 
 | Target | Image | Container Name |
 |--------|-------|----------------|
-| `php-cli-ebics-client-php` | `php-cli-ebics-client-php:8.5.4-cli` | `php-cli-ebics-client-php` |
+| `php-cli-ebics-client-php` | `php-cli-ebics-client-php:8.5.12-cli` | `php-cli-ebics-client-php` |
 
 Network mode: **host** (for easy access to local services).  
 Xdebug is pre-installed and enabled (port 9003).
